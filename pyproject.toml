@@ -7,6 +7,7 @@ name = "assembly_mesh_plugin"
 version = "0.1.0"
 dependencies = [
   "cadquery",
+  "gmsh",
 ]
 requires-python = ">=3.9"
 authors = [
