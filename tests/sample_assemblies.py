@@ -1,6 +1,36 @@
 import cadquery as cq
 
 
+def generate_simple_nested_boxes():
+    """
+    Generates the simplest assembly case where two boxes are nested inside each other.
+    """
+
+    # Create the outter shell
+    shell = cq.Workplane("XY").box(50, 50, 50)
+    shell = shell.faces(">Z").workplane().rect(21, 21).cutThruAll()
+    shell.faces(">X[-2]").tag("inner-right")
+    shell.faces("<X[-2]").tag("~in_contact")
+
+    # Create the insert
+    insert = cq.Workplane("XY").box(20, 20, 50)
+    insert.faces("<X").tag("~in_contact")
+    insert.faces(">X").tag("outer-right")
+
+    assy = cq.Assembly()
+    assy.add(
+        shell, name="shell", loc=cq.Location(cq.Vector(0, 0, 0)), color=cq.Color("red")
+    )
+    assy.add(
+        insert,
+        name="insert",
+        loc=cq.Location(cq.Vector(0, 0, 0)),
+        color=cq.Color("blue"),
+    )
+
+    return assy
+
+
 def generate_test_cross_section():
     """
     Generates a basic cross-section to verify that the tagged faces are crossing over

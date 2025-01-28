@@ -1,5 +1,21 @@
 import assembly_mesh_plugin.plugin
-from sample_coils import generate_test_cross_section, generate_assembly
+from tests.sample_assemblies import (
+    generate_simple_nested_boxes,
+    generate_test_cross_section,
+    generate_assembly,
+)
+
+
+def test_basic_assembly():
+    """
+    Tests to make sure that the most basic assembly works correctly with tagging.
+    """
+
+    # Create the basic assembly
+    assy = generate_simple_nested_boxes()
+
+    # Create a mesh that has all the faces tagged as physical groups
+    assy.assemblyToGmsh(mesh_path="tagged_mesh.msh")
 
 
 def test_basic_cross_section():
