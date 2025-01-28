@@ -1,0 +1,29 @@
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          python-version: 3.11
+          mamba-version: "*"
+          activate-environment: tagged-meshes
+          channels: conda-forge,defaults
+          channel-priority: true
+          environment-file: environment.yml
+      - shell: bash -el {0}
+        run: |
+          mamba info
+          mamba install -y -c conda-forge -c cadquery cadquery=master
+          mamba install -y -c conda-forge gmsh
+          mamba install -y pytest
+          python -m pytest -v
+      - name: Upload output meshes as artifacts for inspection
+        uses: actions/upload-artifact@v3
+        with:
+          name: exported-meshes
+          path: "*.msh"
