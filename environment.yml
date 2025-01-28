@@ -1,0 +1,13 @@
+name: tagged-meshes
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.9,<=3.12
+  - cadquery
+  - pytest
+  - gmsh
+  - python-gmsh
+  - appdirs
+  - pip
+  - pip:
+    - --editable=.
