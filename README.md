@@ -57,7 +57,7 @@ assy.add(insert, name="insert", loc=cq.Location(cq.Vector(0, 0, 0)), color=cq.Co
 assy.assemblyToGmsh(mesh_path="tagged_mesh.msh")
 ```
 
-The resulting `.msh` file should have three physical groups in it. The `in_contact` group should include the faces from both the shell and the insert.
+The resulting `.msh` file should have three physical groups named for tags in it. The `in_contact` group should include the faces from both the shell and the insert.
 
 ## Tests
 
