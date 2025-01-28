@@ -1,3 +1,5 @@
+import tempfile
+
 from OCP.TopoDS import TopoDS_Shape
 import cadquery as cq
 import gmsh
@@ -44,7 +46,19 @@ def assembly_to_gmsh(self, mesh_path="tagged_mesh.msh"):
         # All the solids in the current part should be added to the mesh
         for s in obj.moved(loc).Solids():
             # Add the current solid to the mesh
-            gmsh.model.occ.importShapesNativePointer(s.wrapped._address())
+
+            with tempfile.NamedTemporaryFile(suffix=".brep") as temp_file:
+                s.exportBrep(temp_file.name)
+                gmsh.model.occ.importShapes(temp_file.name)
+
+            # TODO find a way to check if the OCC in gmsh is compatible with the
+            # OCC in CadQuery. When pip installed they tend to be incompatible
+            # and this importShapesNativePointer will seg fault. When both
+            # packages are conda installed the importShapesNativePointer works.
+            # Work around that works in both cases is to write a brep and import
+            # it into gmsh. This is slower but works in all cases.
+            # gmsh.model.occ.importShapesNativePointer(s.wrapped._address())
+
             gmsh.model.occ.synchronize()
 
             # All the faces in the current part should be added to the mesh
