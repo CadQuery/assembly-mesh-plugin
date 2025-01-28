@@ -18,9 +18,6 @@ jobs:
       - shell: bash -el {0}
         run: |
           mamba info
-          mamba install -y -c conda-forge -c cadquery cadquery=master
-          mamba install -y -c conda-forge gmsh
-          mamba install -y pytest
           python -m pytest -v
       - name: Upload output meshes as artifacts for inspection
         uses: actions/upload-artifact@v3
