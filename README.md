@@ -1,4 +1,4 @@
-# assembly-mesh-plugin
+![Project Logo](docs/images/logo.png)
 
 CadQuery plugin to create a mesh of an assembly with corresponding data.
 
@@ -65,8 +65,6 @@ These tests are also run in Github Actions, and the meshes which are generated c
 
 * [sample_coils.py](tests/sample_coils.py) contains generators for sample assemlies for use in testing the basic operation of this plugin. This file also contains the code to tag all faces of interest.
 * [smoke_test.py](tests/smoke_test.py) runs two tests currently. The first is for a simple cross-section of a coil (image below), which makes it easier to verify basic operation. The second is for a planar coil, which forces the use of more advanced selectors, but is not as complex as a coil with a non-planar sweep path. This planar-coil test is not complete yet.
-
-![Coil Cross-Section Assembly](docs/images/logo.png)
 
 Once the test has been run (using the pytest command), two mesh files (.msh extension) be created in the root of the repository.
 
