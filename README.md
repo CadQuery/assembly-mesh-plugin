@@ -1,4 +1,4 @@
-# cadquery-assembly-mesh-plugin
+# assembly-mesh-plugin
 
 CadQuery plugin to create a mesh of an assembly with corresponding data.
 
