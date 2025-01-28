@@ -39,7 +39,6 @@ Below is a simple example.
 ```python
 import cadquery as cq
 import cadquery_assembly_mesh_plugin.plugin
-import gmsh
 
 shell = cq.Workplane("XY").box(50, 50, 50)
 shell = shell.faces(">Z").workplane().rect(21, 21).cutThruAll()
