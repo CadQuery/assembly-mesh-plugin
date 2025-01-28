@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "cadquery_assembly_mesh_plugin"
+name = "assembly_mesh_plugin"
 version = "0.1.0"
 dependencies = [
   "cadquery",
