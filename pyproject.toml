@@ -33,6 +33,3 @@ dev = [
 [project.urls]
 Repository = "https://github.com/cadquery/cadquery-assembly-mesh-plugin.git"
 "Bug Tracker" = "https://github.com/cadquery/cadquery-assembly-mesh-plugin/issues"
-
-[tool.hatch.metadata]
-allow-direct-references = true
