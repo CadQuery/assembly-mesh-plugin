@@ -16,8 +16,12 @@ def test_nested_cubes():
     # Create the basic assembly
     assy = generate_nested_boxes()
 
-    # Create a mesh that has all the faces tagged as physical groups
-    assy.saveToGmsh(mesh_path="tagged_nested_boxes.msh")
+    # Convert the assembly to a GMSH mesh
+    gmsh = assy.getTaggedGmsh()
+
+    # Make sure we have the correct number of surfaces
+    surfaces = gmsh.model.getEntities(2)
+    assert len(surfaces) == 18
 
 
 def test_basic_assembly():
