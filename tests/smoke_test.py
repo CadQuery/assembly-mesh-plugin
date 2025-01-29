@@ -1,3 +1,4 @@
+from pathlib import Path
 import assembly_mesh_plugin.plugin
 from tests.sample_assemblies import (
     generate_simple_nested_boxes,
@@ -14,8 +15,16 @@ def test_basic_assembly():
     # Create the basic assembly
     assy = generate_simple_nested_boxes()
 
-    # Create a mesh that has all the faces tagged as physical groups
-    assy.assemblyToGmsh(mesh_path="tagged_mesh.msh")
+    # Create a gmsh object that has all the faces tagged as physical groups
+    gmsh = assy.assemblyToGmsh()
+
+    # perform a simple mesh on the returned gmsh object
+    gmsh.model.mesh.field.setAsBackgroundMesh(2)
+    gmsh.model.mesh.generate(3)
+    gmsh.write("tagged_mesh.msh")
+    assert Path("tagged_mesh.msh").exists()
+    assert len(gmsh.model.getEntities(2)) == 16
+    gmsh.finalize()
 
 
 def test_basic_cross_section():
@@ -27,7 +36,14 @@ def test_basic_cross_section():
     assy = generate_test_cross_section()
 
     # Create a mesh that has all the faces in the correct physical groups
-    assy.assemblyToGmsh(mesh_path="tagged_cross_section.msh")
+    gmsh = assy.assemblyToGmsh()
+
+    # perform a simple mesh on the returned gmsh object
+    gmsh.model.mesh.field.setAsBackgroundMesh(2)
+    gmsh.model.mesh.generate(3)
+    gmsh.write("tagged_cross_section.msh")
+    assert Path("tagged_cross_section.msh").exists()
+    gmsh.finalize()
 
 
 def test_planar_coil():
@@ -39,4 +55,11 @@ def test_planar_coil():
     assy = generate_assembly()
 
     # Create a mesh that has all the faces in the correct physical groups
-    assy.assemblyToGmsh(mesh_path="tagged_planar_coil.msh")
+    gmsh = assy.assemblyToGmsh()
+
+    # perform a simple mesh on the returned gmsh object
+    gmsh.model.mesh.field.setAsBackgroundMesh(2)
+    gmsh.model.mesh.generate(3)
+    gmsh.write("tagged_cross_section.msh")
+    assert Path("tagged_cross_section.msh").exists()
+    gmsh.finalize()

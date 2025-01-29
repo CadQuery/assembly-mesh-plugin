@@ -5,10 +5,10 @@ import cadquery as cq
 import gmsh
 
 
-def assembly_to_gmsh(self, mesh_path="tagged_mesh.msh"):
+def assembly_to_gmsh(self):
     """
-    Pack the assembly into a gmsh object, respecting assembly part names and face tags when creating
-    the physical groups.
+    Pack the assembly into a gmsh object, respecting assembly part names and
+    face tags when creating the physical groups.
     """
 
     gmsh.initialize()
@@ -126,12 +126,7 @@ def assembly_to_gmsh(self, mesh_path="tagged_mesh.msh"):
 
     gmsh.model.occ.synchronize()
 
-    gmsh.model.mesh.field.setAsBackgroundMesh(2)
-
-    gmsh.model.mesh.generate(3)
-    gmsh.write(mesh_path)
-
-    gmsh.finalize()
+    return gmsh
 
 
 # Patch the new assembly functions into CadQuery's importers package
