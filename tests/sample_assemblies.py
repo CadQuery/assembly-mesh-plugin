@@ -19,13 +19,13 @@ def generate_nested_boxes():
         outside_cube,
         name="outside_cube",
         loc=cq.Location(cq.Vector(0, 0, 0)),
-        color=cq.Color("blue")
+        color=cq.Color("blue"),
     )
     assy.add(
         inside_cube,
         name="inside_cube",
         loc=cq.Location(cq.Vector(0, 0, 0)),
-        color=cq.Color("red")
+        color=cq.Color("red"),
     )
 
     return assy
