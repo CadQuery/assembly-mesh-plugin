@@ -148,4 +148,4 @@ def assembly_to_gmsh(self, mesh_path="tagged_mesh.msh"):
 # Patch the new assembly functions into CadQuery's importers package
 cq.Assembly.assemblyToGmsh = assembly_to_gmsh
 cq.Assembly.saveToGmsh = assembly_to_gmsh  # Alias name that works better on cq.Assembly
-cq.Assembly.getTaggedGmesh = get_tagged_gmesh
+cq.Assembly.getTaggedGmsh = get_tagged_gmsh
