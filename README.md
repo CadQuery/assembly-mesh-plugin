@@ -26,7 +26,7 @@ import cadquery_assembly_mesh_plugin.plugin
 You can then tag faces in each of the assembly parts and create your asembly. To export the assembly to a mesh file, you do the following.
 
 ```python
-your_assembly.assemblyToGmsh(mesh_path="tagged_mesh.msh")
+your_assembly.saveToGmsh(mesh_path="tagged_mesh.msh")
 ```
 
 Normal tag names lead to a physical group with the assembly part name prefixed. So a tag name of `inner-bottom` on an assembly part with the name `steel_plate` will be `steel_plate_inner-bottom`
@@ -54,10 +54,41 @@ assy = cq.Assembly()
 assy.add(shell, name="shell", loc=cq.Location(cq.Vector(0, 0, 0)), color=cq.Color("red"))
 assy.add(insert, name="insert", loc=cq.Location(cq.Vector(0, 0, 0)), color=cq.Color("blue"))
 
-assy.assemblyToGmsh(mesh_path="tagged_mesh.msh")
+assy.saveToGmsh(mesh_path="tagged_mesh.msh")
 ```
 
 The resulting `.msh` file should have three physical groups named for tags in it. The `in_contact` group should include the faces from both the shell and the insert.
+
+If you want more control over the mesh generation and export, you can use the `getTaggedGmsh` method and then finalize the mesh yourself.
+
+```python
+import cadquery as cq
+import cadquery_assembly_mesh_plugin.plugin
+import gmsh
+
+shell = cq.Workplane("XY").box(50, 50, 50)
+shell = shell.faces(">Z").workplane().rect(21, 21).cutThruAll()
+shell.faces(">X[-2]").tag("inner-right")
+shell.faces("<X[-2]").tag("~in_contact")
+
+# Create the insert
+insert = cq.Workplane("XY").box(20, 20, 50)
+insert.faces("<X").tag("~in_contact")
+insert.faces(">X").tag("outer-right")
+
+assy = cq.Assembly()
+assy.add(shell, name="shell", loc=cq.Location(cq.Vector(0, 0, 0)), color=cq.Color("red"))
+assy.add(insert, name="insert", loc=cq.Location(cq.Vector(0, 0, 0)), color=cq.Color("blue"))
+
+# Get a Gmsh object back with all the tagged faces as physical groups
+gmsh = assy.getTaggedGmsh()
+
+# Generate the mesh and write it to the file
+gmsh.model.mesh.field.setAsBackgroundMesh(2)
+gmsh.model.mesh.generate(3)
+gmsh.write(mesh_path)
+gmsh.finalize()
+```
 
 ## Tests
 

@@ -15,7 +15,7 @@ def test_basic_assembly():
     assy = generate_simple_nested_boxes()
 
     # Create a mesh that has all the faces tagged as physical groups
-    assy.assemblyToGmsh(mesh_path="tagged_mesh.msh")
+    assy.saveToGmsh(mesh_path="tagged_mesh.msh")
 
 
 def test_basic_cross_section():
@@ -27,7 +27,7 @@ def test_basic_cross_section():
     assy = generate_test_cross_section()
 
     # Create a mesh that has all the faces in the correct physical groups
-    assy.assemblyToGmsh(mesh_path="tagged_cross_section.msh")
+    assy.saveToGmsh(mesh_path="tagged_cross_section.msh")
 
 
 def test_planar_coil():
@@ -39,4 +39,4 @@ def test_planar_coil():
     assy = generate_assembly()
 
     # Create a mesh that has all the faces in the correct physical groups
-    assy.assemblyToGmsh(mesh_path="tagged_planar_coil.msh")
+    assy.saveToGmsh(mesh_path="tagged_planar_coil.msh")
