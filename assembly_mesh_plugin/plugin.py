@@ -5,12 +5,11 @@ import cadquery as cq
 import gmsh
 
 
-def assembly_to_gmsh(self, mesh_path="tagged_mesh.msh"):
+def get_tagged_gmsh(self):
     """
-    Pack the assembly into a gmsh object, respecting assembly part names and face tags when creating
-    the physical groups.
+    Allows the user to get a gmsh object from the assembly, respecting assembly part names and face
+    tags, but have more control over how it is meshed.
     """
-
     gmsh.initialize()
     gmsh.option.setNumber("General.Terminal", 0)
     gmsh.model.add("coil_assembly")
@@ -126,6 +125,18 @@ def assembly_to_gmsh(self, mesh_path="tagged_mesh.msh"):
 
     gmsh.model.occ.synchronize()
 
+    return gmsh
+
+
+def assembly_to_gmsh(self, mesh_path="tagged_mesh.msh"):
+    """
+    Pack the assembly into a gmsh object, respecting assembly part names and face tags when creating
+    the physical groups.
+    """
+
+    # Turn this assembly with potentially tagged faces into a gmsh object
+    gmsh = get_tagged_gmsh(self)
+
     gmsh.model.mesh.field.setAsBackgroundMesh(2)
 
     gmsh.model.mesh.generate(3)
@@ -136,3 +147,5 @@ def assembly_to_gmsh(self, mesh_path="tagged_mesh.msh"):
 
 # Patch the new assembly functions into CadQuery's importers package
 cq.Assembly.assemblyToGmsh = assembly_to_gmsh
+cq.Assembly.saveToGmsh = assembly_to_gmsh  # Alias name that works better on cq.Assembly
+cq.Assembly.getTaggedGmsh = get_tagged_gmsh
