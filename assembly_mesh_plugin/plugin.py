@@ -135,7 +135,7 @@ def assembly_to_gmsh(self, mesh_path="tagged_mesh.msh"):
     """
 
     # Turn this assembly with potentially tagged faces into a gmsh object
-    gmsh = get_tagged_gmesh(self)
+    gmsh = get_tagged_gmsh(self)
 
     gmsh.model.mesh.field.setAsBackgroundMesh(2)
 
