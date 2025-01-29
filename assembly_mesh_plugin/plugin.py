@@ -5,7 +5,7 @@ import cadquery as cq
 import gmsh
 
 
-def get_tagged_gmesh(self):
+def get_tagged_gmsh(self):
     """
     Allows the user to get a gmsh object from the assembly, respecting assembly part names and face
     tags, but have more control over how it is meshed.
