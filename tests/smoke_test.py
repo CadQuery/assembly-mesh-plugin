@@ -1,9 +1,23 @@
 import assembly_mesh_plugin.plugin
 from tests.sample_assemblies import (
+    generate_nested_boxes,
     generate_simple_nested_boxes,
     generate_test_cross_section,
     generate_assembly,
 )
+
+
+def test_nested_cubes():
+    """
+    Tests to make sure that the nested cubes do not cause the correct number of surfaces
+    in the mesh.
+    """
+
+    # Create the basic assembly
+    assy = generate_nested_boxes()
+
+    # Create a mesh that has all the faces tagged as physical groups
+    assy.saveToGmsh(mesh_path="tagged_nested_boxes.msh")
 
 
 def test_basic_assembly():
