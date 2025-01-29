@@ -1,6 +1,36 @@
 import cadquery as cq
 
 
+def generate_nested_boxes():
+    """
+    Generates a simple assembly of two cubes where one is nested inside the other.
+    """
+
+    # Cube that is nested completely inside the other one
+    inside_cube = cq.Workplane().box(5, 5, 5)
+
+    # Use the inside cube to make a void inside the outside cube
+    outside_cube = cq.Workplane().box(10, 10, 10)
+    outside_cube = outside_cube.cut(inside_cube)
+
+    # Create the assembly
+    assy = cq.Assembly()
+    assy.add(
+        outside_cube,
+        name="outside_cube",
+        loc=cq.Location(cq.Vector(0, 0, 0)),
+        color=cq.Color("blue"),
+    )
+    assy.add(
+        inside_cube,
+        name="inside_cube",
+        loc=cq.Location(cq.Vector(0, 0, 0)),
+        color=cq.Color("red"),
+    )
+
+    return assy
+
+
 def generate_simple_nested_boxes():
     """
     Generates the simplest assembly case where two boxes are nested inside each other.
