@@ -20,7 +20,7 @@ jobs:
           mamba info
           python -m pytest -v
       - name: Upload output meshes as artifacts for inspection
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: exported-meshes
           path: "*.msh"
