@@ -2,7 +2,7 @@
 
 CadQuery plugin to create a mesh of an assembly with corresponding data.
 
-This plugin makes use of CadQuery tags to collect surfaces into Gmsh physical groups. The
+This plugin makes use of CadQuery tags to collect surfaces into [Gmsh](https://gmsh.info/) physical groups. The
 tagged faces are matched to their corresponding surfaces in the mesh via their position in the CadQuery solid(s) vs the Gmsh surface ID. There are a few challenges with mapping tags to surfaces to be aware of.
 
 1. Each tag can select multiple faces/surfaces at once, and this has to be accounted for when mapping tags to surfaces.
@@ -11,7 +11,7 @@ tagged faces are matched to their corresponding surfaces in the mesh via their p
 
 ## Installation
 
-You can do `pip install -e .` locally in the root of this repo to enable development. Alternatively, you can install via `pip install git+git@github.com:cadquery/cadquery-assembly-mesh-plugin.git` if you have access to the repo on Github.
+You can do `pip install -e .` locally in the root of this repo to enable development. Alternatively, you can install via `pip install git+git@github.com:cadquery/assembly-mesh-plugin.git` if you have access to the repo on Github.
 
 ## Usage
 
@@ -20,10 +20,10 @@ You can do `pip install -e .` locally in the root of this repo to enable develop
 The plugin needs to be imported in order to monkey-patch its method into CadQuery:
 
 ```python
-import cadquery_assembly_mesh_plugin.plugin
+import assembly_mesh_plugin.plugin
 ```
 
-You can then tag faces in each of the assembly parts and create your asembly. To export the assembly to a mesh file, you do the following.
+You can then tag faces in each of the assembly parts and create your assembly. To export the assembly to a mesh file, you do the following.
 
 ```python
 your_assembly.saveToGmsh(mesh_path="tagged_mesh.msh")
@@ -38,7 +38,7 @@ Below is a simple example.
 
 ```python
 import cadquery as cq
-import cadquery_assembly_mesh_plugin.plugin
+import assembly_mesh_plugin.plugin
 
 shell = cq.Workplane("XY").box(50, 50, 50)
 shell = shell.faces(">Z").workplane().rect(21, 21).cutThruAll()
@@ -94,7 +94,7 @@ gmsh.finalize()
 
 These tests are also run in Github Actions, and the meshes which are generated can be viewed as artifacts on the successful `tests` Actions there.
 
-* [sample_coils.py](tests/sample_coils.py) contains generators for sample assemlies for use in testing the basic operation of this plugin. This file also contains the code to tag all faces of interest.
+* [sample_coils.py](tests/sample_coils.py) contains generators for sample assemblies for use in testing the basic operation of this plugin. This file also contains the code to tag all faces of interest.
 * [smoke_test.py](tests/smoke_test.py) runs two tests currently. The first is for a simple cross-section of a coil (image below), which makes it easier to verify basic operation. The second is for a planar coil, which forces the use of more advanced selectors, but is not as complex as a coil with a non-planar sweep path. This planar-coil test is not complete yet.
 
 Once the test has been run (using the pytest command), two mesh files (.msh extension) be created in the root of the repository.
