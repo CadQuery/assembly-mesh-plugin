@@ -20,7 +20,7 @@ You can do `pip install -e .` locally in the root of this repo to enable develop
 The plugin needs to be imported in order to monkey-patch its method into CadQuery:
 
 ```python
-import cadquery_assembly_mesh_plugin.plugin
+import assembly_mesh_plugin.plugin
 ```
 
 You can then tag faces in each of the assembly parts and create your asembly. To export the assembly to a mesh file, you do the following.
@@ -38,7 +38,7 @@ Below is a simple example.
 
 ```python
 import cadquery as cq
-import cadquery_assembly_mesh_plugin.plugin
+import assembly_mesh_plugin.plugin
 
 shell = cq.Workplane("XY").box(50, 50, 50)
 shell = shell.faces(">Z").workplane().rect(21, 21).cutThruAll()
