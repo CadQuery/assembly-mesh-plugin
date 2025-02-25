@@ -11,7 +11,7 @@ tagged faces are matched to their corresponding surfaces in the mesh via their p
 
 ## Installation
 
-You can do `pip install -e .` locally in the root of this repo to enable development. Alternatively, you can install via `pip install git+git@github.com:cadquery/cadquery-assembly-mesh-plugin.git` if you have access to the repo on Github.
+You can do `pip install -e .` locally in the root of this repo to enable development. Alternatively, you can install via `pip install git+git@github.com:cadquery/assembly-mesh-plugin.git` if you have access to the repo on Github.
 
 ## Usage
 
