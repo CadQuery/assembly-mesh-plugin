@@ -7,6 +7,7 @@ from tests.sample_assemblies import (
     generate_assembly,
 )
 
+
 def test_simple_assembly():
     """
     Tests to make sure that the most basic assembly works correctly with tagging.
