@@ -45,10 +45,9 @@ def get_tagged_gmsh(self):
         # All the solids in the current part should be added to the mesh
         for s in obj.moved(loc).Solids():
             # Add the current solid to the mesh
-
             with tempfile.NamedTemporaryFile(suffix=".brep") as temp_file:
                 s.exportBrep(temp_file.name)
-                gmsh.model.occ.importShapes(temp_file.name)
+                ps = gmsh.model.occ.importShapes(temp_file.name)
 
             # TODO find a way to check if the OCC in gmsh is compatible with the
             # OCC in CadQuery. When pip installed they tend to be incompatible
@@ -59,6 +58,16 @@ def get_tagged_gmsh(self):
             # gmsh.model.occ.importShapesNativePointer(s.wrapped._address())
 
             gmsh.model.occ.synchronize()
+
+            # Technically, importShapes could import multiple entities/dimensions, so filter those
+            vol_ents = []
+            for p in ps:
+                if p[0] == 3:
+                    vol_ents.append(p[1])
+
+            # Set the physical name to be the part name in the assembly for all the solids
+            ps2 = gmsh.model.addPhysicalGroup(3, vol_ents)
+            gmsh.model.setPhysicalName(3, ps2, f"{name.split('/')[-1]}")
 
             # All the faces in the current part should be added to the mesh
             for face in s.Faces():
