@@ -81,15 +81,15 @@ assy.add(shell, name="shell")
 assy.add(insert, name="insert")
 
 # Get a Gmsh object back with all the tagged faces as physical groups
-gmsh = assy.getTaggedGmsh()
+gmsh_object = assy.getTaggedGmsh()
 
 # Generate the mesh and write it to the file
-gmsh.model.mesh.field.setAsBackgroundMesh(2)
-gmsh.model.mesh.generate(3)
-gmsh.write(mesh_path)
-gmsh.finalize()
+gmsh_object.model.mesh.field.setAsBackgroundMesh(2)
+gmsh_object.model.mesh.generate(3)
+gmsh_object.write("tagged_mesh.msh")
+gmsh_object.finalize()
 ```
-, loc=cq.Location(cq.Vector(0, 0, 0)), color=cq.Color("blue"
+
 ## Tests
 
 These tests are also run in Github Actions, and the meshes which are generated can be viewed as artifacts on the successful `tests` Actions there.
