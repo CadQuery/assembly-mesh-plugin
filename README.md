@@ -63,7 +63,7 @@ If you want more control over the mesh generation and export, you can use the `g
 
 ```python
 import cadquery as cq
-import cadquery_assembly_mesh_plugin.plugin
+import assembly_mesh_plugin.plugin
 import gmsh
 
 shell = cq.Workplane("XY").box(50, 50, 50)
