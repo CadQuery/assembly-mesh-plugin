@@ -51,8 +51,8 @@ insert.faces("<X").tag("~in_contact")
 insert.faces(">X").tag("outer-right")
 
 assy = cq.Assembly()
-assy.add(shell, name="shell", loc=cq.Location(cq.Vector(0, 0, 0)), color=cq.Color("red"))
-assy.add(insert, name="insert", loc=cq.Location(cq.Vector(0, 0, 0)), color=cq.Color("blue"))
+assy.add(shell, name="shell")
+assy.add(insert, name="insert")
 
 assy.saveToGmsh(mesh_path="tagged_mesh.msh")
 ```
@@ -63,7 +63,7 @@ If you want more control over the mesh generation and export, you can use the `g
 
 ```python
 import cadquery as cq
-import cadquery_assembly_mesh_plugin.plugin
+import assembly_mesh_plugin.plugin
 import gmsh
 
 shell = cq.Workplane("XY").box(50, 50, 50)
@@ -77,17 +77,17 @@ insert.faces("<X").tag("~in_contact")
 insert.faces(">X").tag("outer-right")
 
 assy = cq.Assembly()
-assy.add(shell, name="shell", loc=cq.Location(cq.Vector(0, 0, 0)), color=cq.Color("red"))
-assy.add(insert, name="insert", loc=cq.Location(cq.Vector(0, 0, 0)), color=cq.Color("blue"))
+assy.add(shell, name="shell")
+assy.add(insert, name="insert")
 
 # Get a Gmsh object back with all the tagged faces as physical groups
-gmsh = assy.getTaggedGmsh()
+gmsh_object = assy.getTaggedGmsh()
 
 # Generate the mesh and write it to the file
-gmsh.model.mesh.field.setAsBackgroundMesh(2)
-gmsh.model.mesh.generate(3)
-gmsh.write(mesh_path)
-gmsh.finalize()
+gmsh_object.model.mesh.field.setAsBackgroundMesh(2)
+gmsh_object.model.mesh.generate(3)
+gmsh_object.write("tagged_mesh.msh")
+gmsh_object.finalize()
 ```
 
 ## Tests
