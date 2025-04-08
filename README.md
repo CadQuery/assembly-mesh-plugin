@@ -24,7 +24,7 @@ pip install assembly-mesh-plugin
 The plugin needs to be imported in order to monkey-patch its method into CadQuery:
 
 ```python
-import assembly_mesh_plugin.plugin
+import assembly_mesh_plugin
 ```
 
 You can then tag faces in each of the assembly parts and create your assembly. To export the assembly to a mesh file, you do the following.
@@ -42,7 +42,7 @@ Below is a simple example.
 
 ```python
 import cadquery as cq
-import assembly_mesh_plugin.plugin
+import assembly_mesh_plugin
 
 shell = cq.Workplane("XY").box(50, 50, 50)
 shell = shell.faces(">Z").workplane().rect(21, 21).cutThruAll()
@@ -67,7 +67,7 @@ If you want more control over the mesh generation and export, you can use the `g
 
 ```python
 import cadquery as cq
-import assembly_mesh_plugin.plugin
+import assembly_mesh_plugin
 import gmsh
 
 shell = cq.Workplane("XY").box(50, 50, 50)

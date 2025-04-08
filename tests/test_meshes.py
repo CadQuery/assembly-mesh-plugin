@@ -1,5 +1,5 @@
 import gmsh
-import assembly_mesh_plugin.plugin
+import assembly_mesh_plugin
 from tests.sample_assemblies import (
     generate_nested_boxes,
     generate_simple_nested_boxes,
