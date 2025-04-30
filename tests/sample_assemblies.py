@@ -262,3 +262,24 @@ def generate_assembly():
     assembly.add(mat4_body, name="mat4", color=cq.Color("gray"))
 
     return assembly
+
+
+def generate_subshape_assembly():
+    """
+    Generates a simple assembly with subshapes for testing.
+    """
+
+    # Create a simple assembly
+    assy = cq.Assembly(name="top-level")
+    cube_1 = cq.Workplane().box(10.0, 10.0, 10.0)
+    assy.add(cube_1, name="cube_1", color=cq.Color("green"))
+
+    # Add subshape name, color and layer
+    assy.addSubshape(
+        cube_1.faces(">Z").val(),
+        name="cube_1_top_face",
+        color=cq.Color("red"),
+        layer="cube_1_top_face",
+    )
+
+    return assy
