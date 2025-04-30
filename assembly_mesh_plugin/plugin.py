@@ -42,6 +42,34 @@ def get_tagged_gmsh(self):
                 else:
                     tagged_faces[short_name][tag] = [face.val()]
 
+        # Extract the tagged faces that have been added by the addSubshape method of cq.Assembly
+        if self._subshape_names:
+            for subshape, subshape_tag in self._subshape_names.items():
+                if subshape_tag in tagged_faces[short_name]:
+                    # Check to see if this is a duplicate
+                    if subshape in tagged_faces[short_name][subshape_tag]:
+                        print(
+                            f"WARNING: Duplicate subshape found for tag {subshape_tag}."
+                        )
+
+                    tagged_faces[short_name][subshape_tag].append(subshape)
+                else:
+                    tagged_faces[short_name][subshape_tag] = [subshape]
+
+        # Extract the tagged faces that have been added by the addSubshape method of cq.Assembly
+        if self._subshape_layers:
+            for subshape, subshape_tag in self._subshape_layers.items():
+                if subshape_tag in tagged_faces[short_name]:
+                    # Check to see if this is a duplicate
+                    if subshape in tagged_faces[short_name][subshape_tag]:
+                        print(
+                            f"WARNING: Duplicate subshape found for tag {subshape_tag}."
+                        )
+
+                    tagged_faces[short_name][subshape_tag].append(subshape)
+                else:
+                    tagged_faces[short_name][subshape_tag] = [subshape]
+
         # All the solids in the current part should be added to the mesh
         for s in obj.moved(loc).Solids():
             # Add the current solid to the mesh

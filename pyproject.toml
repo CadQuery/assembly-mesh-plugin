@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "assembly_mesh_plugin"
 version = "0.1.1"
 dependencies = [
-  "cadquery",
+  "cadquery@git+https://github.com/CadQuery/cadquery.git",
   "gmsh",
 ]
 requires-python = ">=3.9"
@@ -30,6 +30,9 @@ dev = [
   "pytest",
   "black",
 ]
+
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [project.urls]
 Repository = "https://github.com/cadquery/assembly-mesh-plugin.git"
