@@ -182,7 +182,131 @@ def assembly_to_gmsh(self, mesh_path="tagged_mesh.msh"):
     gmsh.finalize()
 
 
+def assembly_to_imprinted_gmsh(self, mesh_path="tagged_mesh.msh"):
+    """
+    Exports an imprinted assembly to capture conformal meshes.
+    """
+
+    gmsh.initialize()
+    gmsh.option.setNumber("General.Terminal", 0)
+    gmsh.model.add("assembly")
+
+    # The mesh volume and surface ids should line up with the order of solids and faces in the assembly
+    vol_id = 1
+    surface_id = 1
+
+    # Tracks multi-surface physical groups
+    multi_material_groups = {}
+    surface_groups = {}
+
+    # Tracks the solids with tagged faces
+    tagged_faces = {}
+    solids_with_tagged_faces = {}
+
+    # Imprint the assembly
+    imprinted_assembly, imprinted_solids_with_orginal_ids = (
+        cq.occ_impl.assembly.imprint(self)
+    )
+
+    print(imprinted_solids_with_orginal_ids)
+    for solid, id in imprinted_solids_with_orginal_ids.items():
+        # Add the current solid to the mesh
+        # Work-around for a segfault with in-memory passing of OCCT objects
+        with tempfile.NamedTemporaryFile(suffix=".brep") as temp_file:
+            solid.exportBrep(temp_file.name)
+            ps = gmsh.model.occ.importShapes(temp_file.name)
+        gmsh.model.occ.synchronize()
+
+        # Technically, importShapes could import multiple entities/dimensions, so filter those
+        vol_ents = []
+        for p in ps:
+            if p[0] == 3:
+                vol_ents.append(p[1])
+
+        # Set the physical name to be the part name in the assembly for all the solids
+        ps2 = gmsh.model.addPhysicalGroup(3, vol_ents)
+        gmsh.model.setPhysicalName(3, ps2, f"{id[0].split('/')[-1]}")
+
+        # Get the original assembly part
+        object_name = id[0].split("/")[-1]
+        assembly_part = self.objects[object_name]
+
+        # Collect any tags from the part
+        for tag, wp in assembly_part.obj.ctx.tags.items():
+            tagged_face = wp.faces().all()[0].val()
+            for face in wp.faces().all():
+                tagged_faces[face.val()] = tag
+
+        # Iterate over the faces of the assembly part
+        for face in assembly_part.obj.faces():
+            for tagged_face, tag in tagged_faces.items():
+                if TopoDS_Shape.IsEqual(face.wrapped, tagged_face.wrapped):
+                    print(f"{vol_id}_{surface_id}", tag)
+                    solids_with_tagged_faces[f"{vol_id}_{surface_id}"] = (
+                        object_name,
+                        tag,
+                    )
+
+            surface_id += 1
+        vol_id += 1
+
+    # Reset the volume and surface IDs
+    vol_id = 1
+    surface_id = 1
+
+    # Step through the imprinted assembly/shape and check for tagged faces
+    for solid in imprinted_assembly.solids():
+        for face in solid.faces().Faces():
+            # Check to see if this face has been tagged
+            if f"{vol_id}_{surface_id}" in solids_with_tagged_faces.keys():
+                short_name = solids_with_tagged_faces[f"{vol_id}_{surface_id}"][0]
+                tag = solids_with_tagged_faces[f"{vol_id}_{surface_id}"][1]
+
+                # Find out if this is a multi-material tag
+                if tag.startswith("~"):
+                    # Set the surface name to be the name of the tag without the ~
+                    group_name = tag.replace("~", "").split("-")[0]
+
+                    # Add this face to the multi-material group
+                    if group_name in multi_material_groups:
+                        multi_material_groups[group_name].append(surface_id)
+                    else:
+                        multi_material_groups[group_name] = [surface_id]
+                else:
+                    # We want to track all surfaces that might be in a tag group
+                    cur_tag_name = f"{short_name}_{tag}"
+                    if cur_tag_name in surface_groups:
+                        print("Append: ", cur_tag_name, short_name, surface_id)
+                        surface_groups[cur_tag_name].append(surface_id)
+                    else:
+                        print("New: ", cur_tag_name, short_name, surface_id)
+                        surface_groups[cur_tag_name] = [surface_id]
+
+            surface_id += 1
+        vol_id += 1
+
+    # Handle tagged surface groups
+    for t_name, surf_group in surface_groups.items():
+        ps = gmsh.model.addPhysicalGroup(2, surf_group)
+        gmsh.model.setPhysicalName(2, ps, t_name)
+
+    # Handle multi-material tags
+    for group_name, mm_group in multi_material_groups.items():
+        ps = gmsh.model.addPhysicalGroup(2, mm_group)
+        gmsh.model.setPhysicalName(2, ps, f"{group_name}")
+
+    gmsh.model.occ.synchronize()
+
+    gmsh.model.mesh.field.setAsBackgroundMesh(2)
+
+    gmsh.model.mesh.generate(3)
+    gmsh.write(mesh_path)
+
+    gmsh.finalize()
+
+
 # Patch the new assembly functions into CadQuery's importers package
 cq.Assembly.assemblyToGmsh = assembly_to_gmsh
 cq.Assembly.saveToGmsh = assembly_to_gmsh  # Alias name that works better on cq.Assembly
 cq.Assembly.getTaggedGmsh = get_tagged_gmsh
+cq.Assembly.assemblyToImprintedGmsh = assembly_to_imprinted_gmsh
