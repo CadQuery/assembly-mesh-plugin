@@ -79,3 +79,34 @@ def test_subshape_assembly():
             continue
 
         assert cur_name in ["cube_1_cube_1_top_face"]
+
+
+def test_imprinted_assembly():
+    # Create the basic assembly
+    assy = generate_simple_nested_boxes()
+
+    assy.assemblyToImprintedGmsh("tagged_imprinted_mesh.msh")
+
+    gmsh.initialize()
+
+    gmsh.open("tagged_imprinted_mesh.msh")
+
+    # Check the solids for the correct tags
+    physical_groups = gmsh.model.getPhysicalGroups(3)
+    for group in physical_groups:
+        # Get the name for the current volume
+        cur_name = gmsh.model.getPhysicalName(3, group[1])
+
+        assert cur_name in ["shell", "insert"]
+
+    # Check the surfaces for the correct tags
+    physical_groups = gmsh.model.getPhysicalGroups(2)
+    for group in physical_groups:
+        # Get the name for this group
+        cur_name = gmsh.model.getPhysicalName(2, group[1])
+
+        # Skip any groups that are not tagged explicitly
+        if "_surface_" in cur_name:
+            continue
+
+        assert cur_name in ["shell_inner-right", "insert_outer-right", "in_contact"]
