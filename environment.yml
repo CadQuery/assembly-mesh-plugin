@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python>=3.9,<=3.12
-  - cadquery
+  - cadquery=master
   - pytest
   - gmsh
   - python-gmsh
