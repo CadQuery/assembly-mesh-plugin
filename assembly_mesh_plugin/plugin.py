@@ -209,7 +209,6 @@ def get_imprinted_gmsh(self):
         cq.occ_impl.assembly.imprint(self)
     )
 
-    print(imprinted_solids_with_orginal_ids)
     for solid, id in imprinted_solids_with_orginal_ids.items():
         # Add the current solid to the mesh
         # Work-around for a segfault with in-memory passing of OCCT objects
@@ -322,3 +321,4 @@ cq.Assembly.assemblyToGmsh = assembly_to_gmsh
 cq.Assembly.saveToGmsh = assembly_to_gmsh  # Alias name that works better on cq.Assembly
 cq.Assembly.getTaggedGmsh = get_tagged_gmsh
 cq.Assembly.assemblyToImprintedGmsh = assembly_to_imprinted_gmsh
+cq.Assembly.getImprintedGmsh = get_imprinted_gmsh
