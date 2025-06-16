@@ -182,11 +182,12 @@ def assembly_to_gmsh(self, mesh_path="tagged_mesh.msh"):
     gmsh.finalize()
 
 
-def assembly_to_imprinted_gmsh(self, mesh_path="tagged_mesh.msh"):
+def get_imprinted_gmsh(self):
     """
-    Exports an imprinted assembly to capture conformal meshes.
+    Allows the user to get a gmsh object from the assembly, with the assembly being imprinted.
     """
 
+    # Initialize gmsh and create a new model
     gmsh.initialize()
     gmsh.option.setNumber("General.Terminal", 0)
     gmsh.model.add("assembly")
@@ -296,6 +297,17 @@ def assembly_to_imprinted_gmsh(self, mesh_path="tagged_mesh.msh"):
         gmsh.model.setPhysicalName(2, ps, f"{group_name}")
 
     gmsh.model.occ.synchronize()
+
+    return gmsh
+
+
+def assembly_to_imprinted_gmsh(self, mesh_path="tagged_mesh.msh"):
+    """
+    Exports an imprinted assembly to capture conformal meshes.
+    """
+
+    # Turn this assembly into a imprinted gmsh object
+    gmsh = get_imprinted_gmsh(self)
 
     gmsh.model.mesh.field.setAsBackgroundMesh(2)
 
