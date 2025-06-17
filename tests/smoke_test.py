@@ -24,6 +24,22 @@ def test_nested_cubes():
     assert len(surfaces) == 18
 
 
+def test_imprinted_assembly_mesh():
+    """
+    Tests to make sure that the imprinted assembly mesh works correctly with tagging.
+    """
+
+    # Create the basic assembly
+    assy = generate_test_cross_section()
+
+    # Convert eh assembly to an imprinted GMSH mesh
+    gmsh = assy.getImprintedGmsh()
+
+    # Make sure we have the correct number of surfaces
+    surfaces = gmsh.model.getEntities(2)
+    assert len(surfaces) == 56
+
+
 def test_basic_assembly():
     """
     Tests to make sure that the most basic assembly works correctly with tagging.

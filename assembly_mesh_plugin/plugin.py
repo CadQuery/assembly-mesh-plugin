@@ -182,11 +182,12 @@ def assembly_to_gmsh(self, mesh_path="tagged_mesh.msh"):
     gmsh.finalize()
 
 
-def assembly_to_imprinted_gmsh(self, mesh_path="tagged_mesh.msh"):
+def get_imprinted_gmsh(self):
     """
-    Exports an imprinted assembly to capture conformal meshes.
+    Allows the user to get a gmsh object from the assembly, with the assembly being imprinted.
     """
 
+    # Initialize gmsh and create a new model
     gmsh.initialize()
     gmsh.option.setNumber("General.Terminal", 0)
     gmsh.model.add("assembly")
@@ -208,7 +209,6 @@ def assembly_to_imprinted_gmsh(self, mesh_path="tagged_mesh.msh"):
         cq.occ_impl.assembly.imprint(self)
     )
 
-    print(imprinted_solids_with_orginal_ids)
     for solid, id in imprinted_solids_with_orginal_ids.items():
         # Add the current solid to the mesh
         # Work-around for a segfault with in-memory passing of OCCT objects
@@ -297,6 +297,17 @@ def assembly_to_imprinted_gmsh(self, mesh_path="tagged_mesh.msh"):
 
     gmsh.model.occ.synchronize()
 
+    return gmsh
+
+
+def assembly_to_imprinted_gmsh(self, mesh_path="tagged_mesh.msh"):
+    """
+    Exports an imprinted assembly to capture conformal meshes.
+    """
+
+    # Turn this assembly into a imprinted gmsh object
+    gmsh = get_imprinted_gmsh(self)
+
     gmsh.model.mesh.field.setAsBackgroundMesh(2)
 
     gmsh.model.mesh.generate(3)
@@ -310,3 +321,4 @@ cq.Assembly.assemblyToGmsh = assembly_to_gmsh
 cq.Assembly.saveToGmsh = assembly_to_gmsh  # Alias name that works better on cq.Assembly
 cq.Assembly.getTaggedGmsh = get_tagged_gmsh
 cq.Assembly.assemblyToImprintedGmsh = assembly_to_imprinted_gmsh
+cq.Assembly.getImprintedGmsh = get_imprinted_gmsh
