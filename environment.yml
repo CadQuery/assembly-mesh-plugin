@@ -1,7 +1,7 @@
 name: tagged-meshes
 channels:
   - conda-forge
-  - cadquery>=2.6.0
+  - cadquery
 dependencies:
   - python>=3.9,<=3.12
   - cadquery=master
