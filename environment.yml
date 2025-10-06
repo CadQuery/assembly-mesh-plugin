@@ -4,7 +4,7 @@ channels:
   - cadquery
 dependencies:
   - python>=3.9,<=3.12
-  - cadquery=2.6.0
+  - cadquery>=2.6.0
   - pytest
   - gmsh
   - python-gmsh
