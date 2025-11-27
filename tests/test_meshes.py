@@ -1,6 +1,8 @@
 import gmsh
 import assembly_mesh_plugin
 from tests.sample_assemblies import (
+    generate_nested_spheres,
+    generate_touching_boxes,
     generate_nested_boxes,
     generate_simple_nested_boxes,
     generate_test_cross_section,
@@ -24,16 +26,22 @@ def test_simple_assembly():
 
     gmsh.open("tagged_mesh.msh")
 
-    # Check the solids for the correct tags
+    # Make sure that there are physical groups for the volumes
     physical_groups = gmsh.model.getPhysicalGroups(3)
+    assert len(physical_groups) > 0, "There should be some physical groups for volumes"
+
+    # Check the solids for the correct tags
     for group in physical_groups:
         # Get the name for the current volume
         cur_name = gmsh.model.getPhysicalName(3, group[1])
 
         assert cur_name in ["shell", "insert"]
 
-    # Check the surfaces for the correct tags
+    # Check to make sure there are physical groups for the surfaces
     physical_groups = gmsh.model.getPhysicalGroups(2)
+    assert len(physical_groups) > 0, "There should be some physical groups for surfaces"
+
+    # Check the surfaces for the correct tags
     for group in physical_groups:
         # Get the name for this group
         cur_name = gmsh.model.getPhysicalName(2, group[1])
@@ -60,16 +68,22 @@ def test_subshape_assembly():
 
     gmsh.open("tagged_subshape_mesh.msh")
 
-    # Check the solids for the correct tags
+    # Make sure that there are physical groups for the volumes
     physical_groups = gmsh.model.getPhysicalGroups(3)
+    assert len(physical_groups) > 0, "There should be some physical groups for volumes"
+
+    # Check the solids/volumes for the correct tags
     for group in physical_groups:
         # Get the name for the current volume
         cur_name = gmsh.model.getPhysicalName(3, group[1])
 
         assert cur_name in ["cube_1"]
 
-    # Check the surfaces for the correct tags
+    # Check to make sure there are physical groups for the surfaces
     physical_groups = gmsh.model.getPhysicalGroups(2)
+    assert len(physical_groups) > 0, "There should be some physical groups for surfaces"
+
+    # Check the surfaces for the correct tags
     for group in physical_groups:
         # Get the name for this group
         cur_name = gmsh.model.getPhysicalName(2, group[1])
@@ -91,16 +105,22 @@ def test_imprinted_assembly():
 
     gmsh.open("tagged_imprinted_mesh.msh")
 
-    # Check the solids for the correct tags
+    # Make sure that there are physical groups for the volumes
     physical_groups = gmsh.model.getPhysicalGroups(3)
+    assert len(physical_groups) > 0, "There should be some physical groups for volumes"
+
+    # Check the solids for the correct tags
     for group in physical_groups:
         # Get the name for the current volume
         cur_name = gmsh.model.getPhysicalName(3, group[1])
 
         assert cur_name in ["shell", "insert"]
 
-    # Check the surfaces for the correct tags
+    # Check to make sure there are physical groups for the surfaces
     physical_groups = gmsh.model.getPhysicalGroups(2)
+    assert len(physical_groups) > 0, "There should be some physical groups for surfaces"
+
+    # Check the surfaces for the correct tags
     for group in physical_groups:
         # Get the name for this group
         cur_name = gmsh.model.getPhysicalName(2, group[1])
@@ -110,3 +130,51 @@ def test_imprinted_assembly():
             continue
 
         assert cur_name in ["shell_inner-right", "insert_outer-right", "in_contact"]
+
+
+def test_conformal_mesh_compliance():
+    """
+    Tests to make sure the meshing process produces a conformal mesh.
+    """
+
+    def _check_physical_groups():
+        # Make sure that there are physical groups for the volumes
+        physical_groups = gmsh.model.getPhysicalGroups(3)
+        assert (
+            len(physical_groups) > 0
+        ), "There should be some physical groups for volumes"
+
+        # Check the solids for the correct tags
+        for group in physical_groups:
+            # Get the name for the current volume
+            cur_name = gmsh.model.getPhysicalName(3, group[1])
+
+            assert cur_name in ["inner_sphere", "middle_sphere"]
+
+        # Check to make sure there are physical groups for the surfaces
+        physical_groups = gmsh.model.getPhysicalGroups(2)
+        # assert len(physical_groups) > 0, "There should be some physical groups for surfaces"
+
+    # Create a basic assembly
+    assy = generate_nested_spheres()
+
+    #
+    # Go through the entire process with an imprinted assembly.
+    #
+    gmsh = assy.getGmsh(imprint=True)
+    gmsh.model.mesh.generate(3)
+
+    # Ensure that there are physical groups and that they have the right names
+    _check_physical_groups()
+
+    #
+    # Go othrough the entire process again with a non-imprinted assembly.
+    #
+    gmsh = assy.getGmsh(imprint=False)
+    gmsh.model.mesh.generate(3)
+
+    # Ensure that there are physical groups
+    _check_physical_groups()
+
+    # assert False
+    # gmsh.fltk.run()

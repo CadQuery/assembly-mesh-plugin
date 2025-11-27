@@ -1,6 +1,38 @@
 import cadquery as cq
 
 
+def generate_nested_spheres():
+    """
+    Used for confirming conformal meshing.
+    """
+
+    # Generate the simple assembly of two nested spheres
+    box_cutter = cq.Workplane("XY").moveTo(0, 5).box(20, 10, 20)
+    inner_sphere = cq.Workplane("XY").sphere(6).cut(box_cutter)
+    middle_sphere = cq.Workplane("XY").sphere(6.1).cut(box_cutter).cut(inner_sphere)
+
+    assy = cq.Assembly()
+    assy.add(inner_sphere, name="inner_sphere")
+    assy.add(middle_sphere, name="middle_sphere")
+
+    return assy
+
+
+def generate_touching_boxes():
+    """
+    Generates an assembly of two cubes which touch on one face.
+    """
+
+    cube_1 = cq.Workplane().box(10, 10, 10)
+    cube_2 = cq.Workplane().transformed(offset=(10, 0, 0)).box(10, 10, 10)
+
+    assy = cq.Assembly()
+    assy.add(cube_1, name="left_cube")
+    assy.add(cube_2, name="right_cube")
+
+    return assy
+
+
 def generate_nested_boxes():
     """
     Generates a simple assembly of two cubes where one is nested inside the other.
