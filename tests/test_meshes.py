@@ -141,8 +141,8 @@ def test_nested_sphere_assembly():
         # Make sure that there are physical groups for the volumes
         physical_groups = gmsh.model.getPhysicalGroups(3)
         assert (
-            len(physical_groups) > 0
-        ), "There should be some physical groups for volumes"
+            len(physical_groups) == 2
+        ), "There should be two physical groups for volumes"
 
         # Check the solids for the correct tags
         for group in physical_groups:
@@ -150,6 +150,10 @@ def test_nested_sphere_assembly():
             cur_name = gmsh.model.getPhysicalName(3, group[1])
 
             assert cur_name in ["inner_sphere", "middle_sphere"]
+
+        # Make sure we can retrieve the physical groups
+        inner_sphere_volume = gmsh.model.getEntitiesForPhysicalName("inner_sphere")
+        middle_sphere_volume = gmsh.model.getEntitiesForPhysicalName("middle_sphere")
 
     # Create a basic assembly
     assy = generate_nested_spheres()

@@ -204,21 +204,21 @@ def get_gmsh(self, imprint=True):
 
     # Step through each of the volumes and add physical groups for each
     for volume_id in volumes.keys():
+        gmsh.model.occ.synchronize()
         ps = gmsh.model.addPhysicalGroup(3, volumes[volume_id][0])
         gmsh.model.setPhysicalName(3, ps, f"{volume_map[volume_id]}")
-        gmsh.model.occ.synchronize()
 
     # Handle tagged surface groups
     for t_name, surf_group in surface_groups.items():
+        gmsh.model.occ.synchronize()
         ps = gmsh.model.addPhysicalGroup(2, surf_group)
         gmsh.model.setPhysicalName(2, ps, t_name)
-        gmsh.model.occ.synchronize()
 
     # Handle multi-material tags
     for group_name, mm_group in multi_material_groups.items():
+        gmsh.model.occ.synchronize()
         ps = gmsh.model.addPhysicalGroup(2, mm_group)
         gmsh.model.setPhysicalName(2, ps, f"{group_name}")
-        gmsh.model.occ.synchronize()
 
     gmsh.model.occ.synchronize()
 
