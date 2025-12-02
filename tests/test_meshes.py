@@ -132,9 +132,9 @@ def test_imprinted_assembly():
         assert cur_name in ["shell_inner-right", "insert_outer-right", "in_contact"]
 
 
-def test_conformal_mesh_compliance():
+def test_nested_sphere_assembly():
     """
-    Tests to make sure the meshing process produces a conformal mesh.
+    Tests to make sure the the nested sphere example works.
     """
 
     def _check_physical_groups():
@@ -150,10 +150,6 @@ def test_conformal_mesh_compliance():
             cur_name = gmsh.model.getPhysicalName(3, group[1])
 
             assert cur_name in ["inner_sphere", "middle_sphere"]
-
-        # Check to make sure there are physical groups for the surfaces
-        physical_groups = gmsh.model.getPhysicalGroups(2)
-        # assert len(physical_groups) > 0, "There should be some physical groups for surfaces"
 
     # Create a basic assembly
     assy = generate_nested_spheres()
@@ -175,6 +171,3 @@ def test_conformal_mesh_compliance():
 
     # Ensure that there are physical groups
     _check_physical_groups()
-
-    # assert False
-    # gmsh.fltk.run()
