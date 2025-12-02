@@ -236,6 +236,16 @@ def get_tagged_gmsh(self):
     return gmsh
 
 
+def get_imprinted_gmsh(self):
+    """
+    Allows the user to get a gmsh object from the assembly, with the assembly being imprinted.
+    """
+
+    gmsh = get_gmsh(self, imprint=True)
+
+    return gmsh
+
+
 def assembly_to_gmsh(self, mesh_path="tagged_mesh.msh"):
     """
     Pack the assembly into a gmsh object, respecting assembly part names and face tags when creating
@@ -251,16 +261,6 @@ def assembly_to_gmsh(self, mesh_path="tagged_mesh.msh"):
     gmsh.write(mesh_path)
 
     gmsh.finalize()
-
-
-def get_imprinted_gmsh(self):
-    """
-    Allows the user to get a gmsh object from the assembly, with the assembly being imprinted.
-    """
-
-    gmsh = get_gmsh(self, imprint=True)
-
-    return gmsh
 
 
 def assembly_to_imprinted_gmsh(self, mesh_path="tagged_mesh.msh"):
