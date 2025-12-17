@@ -315,3 +315,20 @@ def generate_subshape_assembly():
     )
 
     return assy
+
+
+def generate_materials_assembly():
+    """
+    Generates a simple assembly with materials.
+    """
+
+    # Create the assembly children
+    cube_1 = cq.Workplane().box(10, 10, 10)
+    cube_2 = cq.Workplane().box(5, 5, 5)
+
+    # Put the assembly together
+    assy = cq.Assembly(name="top-level")
+    assy.add(cube_1, name="cube_1", material="copper")
+    assy.add(cube_2, name="cube_2", loc=cq.Location(0, 0, 5), material="steel")
+
+    return assy

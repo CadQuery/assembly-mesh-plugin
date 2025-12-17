@@ -161,6 +161,7 @@ def get_gmsh(self, imprint=True):
     tagged_faces = {}
     multi_material_groups = {}
     surface_groups = {}
+    solid_materials = []
 
     gmsh.initialize()
     gmsh.option.setNumber(
@@ -171,13 +172,23 @@ def get_gmsh(self, imprint=True):
     # Get all of the subshapes and their corresponding names/positions
     extract_subshape_names(self, self.name)
 
-    # Imprint the assembly
-    imprinted_assembly, imprinted_solids_with_orginal_ids = (
-        cq.occ_impl.assembly.imprint(self)
-    )
-
     # Handle the imprinted assembly
     if imprint:
+        # Imprint the assembly
+        imprinted_assembly, imprinted_solids_with_orginal_ids = (
+            cq.occ_impl.assembly.imprint(self)
+        )
+
+        # Collect the materials
+        for imp_solid, solid_id in imprinted_solids_with_orginal_ids.items():
+            # Track down the original assembly object so that we can retrieve materials, if present
+            short_id = solid_id[0].split("/")[-1] if "/" in solid_id[0] else solid_id[0]
+            subassy = self.objects[short_id]
+
+            # Save the assembly material associated with this solid
+            if subassy.material:
+                solid_materials.append(subassy.material.name)
+
         for solid, name in imprinted_solids_with_orginal_ids.items():
             # Get just the name of the current assembly
             short_name = name[0].split("/")[-1]
@@ -202,11 +213,22 @@ def get_gmsh(self, imprint=True):
                 # Add faces to the mesh and handle tagged faces
                 add_faces_to_mesh(gmsh, solid, short_name, loc)
 
+            # Keep track of the materials
+            if self.objects[name.split("/")[-1]].material:
+                solid_materials.append(self.objects[name.split("/")[-1]].material.name)
+
     # Step through each of the volumes and add physical groups for each
     for volume_id in volumes.keys():
         gmsh.model.occ.synchronize()
+
+        # Attach the name to the volume
         ps = gmsh.model.addPhysicalGroup(3, volumes[volume_id][0])
         gmsh.model.setPhysicalName(3, ps, f"{volume_map[volume_id]}")
+
+        # Attach the material to the volume, if the material is present
+        if len(solid_materials) >= volume_id:
+            ps1 = gmsh.model.addPhysicalGroup(3, volumes[volume_id][0])
+            gmsh.model.setPhysicalName(3, ps1, f"mat:{solid_materials[volume_id - 1]}")
 
     # Handle tagged surface groups
     for t_name, surf_group in surface_groups.items():
