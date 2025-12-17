@@ -221,14 +221,14 @@ def get_gmsh(self, imprint=True):
     for volume_id in volumes.keys():
         gmsh.model.occ.synchronize()
 
-        # Include the material name, if present
+        # Attach the name to the volume
         ps = gmsh.model.addPhysicalGroup(3, volumes[volume_id][0])
+        gmsh.model.setPhysicalName(3, ps, f"{volume_map[volume_id]}")
 
-        # See if we need to include the material name as part of the physical volume name
-        volume_name = f"{volume_map[volume_id]}"
+        # Attach the material to the volume, if the material is present
         if len(solid_materials) >= volume_id:
-            volume_name = f"{volume_map[volume_id]}~{solid_materials[volume_id - 1]}"
-        gmsh.model.setPhysicalName(3, ps, volume_name)
+            ps1 = gmsh.model.addPhysicalGroup(3, volumes[volume_id][0])
+            gmsh.model.setPhysicalName(3, ps1, f"mat:{solid_materials[volume_id - 1]}")
 
     # Handle tagged surface groups
     for t_name, surf_group in surface_groups.items():

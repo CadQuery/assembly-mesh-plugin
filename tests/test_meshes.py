@@ -196,9 +196,13 @@ def test_mesh_materials():
 
     # Make sure we got the correct names
     name = gmsh.model.getPhysicalName(3, 1)
-    assert name == "cube_1~copper"
+    assert name == "cube_1"
     name = gmsh.model.getPhysicalName(3, 2)
-    assert name == "cube_2~steel"
+    assert name == "mat:copper"
+    name = gmsh.model.getPhysicalName(3, 3)
+    assert name == "cube_2"
+    name = gmsh.model.getPhysicalName(3, 4)
+    assert name == "mat:steel"
 
     #
     # Non-imprinted assembly
@@ -210,6 +214,10 @@ def test_mesh_materials():
 
     # Make sure we got the correct names
     name = gmsh.model.getPhysicalName(3, 1)
-    assert name == "cube_1~copper"
+    assert name == "cube_1"
     name = gmsh.model.getPhysicalName(3, 2)
-    assert name == "cube_2~steel"
+    assert name == "mat:copper"
+    name = gmsh.model.getPhysicalName(3, 3)
+    assert name == "cube_2"
+    name = gmsh.model.getPhysicalName(3, 4)
+    assert name == "mat:steel"
