@@ -8,6 +8,7 @@ from tests.sample_assemblies import (
     generate_test_cross_section,
     generate_assembly,
     generate_subshape_assembly,
+    generate_materials_assembly,
 )
 
 
@@ -175,3 +176,48 @@ def test_nested_sphere_assembly():
 
     # Ensure that there are physical groups
     _check_physical_groups()
+
+
+def test_mesh_materials():
+    """
+    Tests to make sure that assembly materials are preserved in the mesh data.
+    """
+
+    # Create the basic assembly with materials
+    assy = generate_materials_assembly()
+
+    #
+    # Imprinted assembly
+    #
+    gmsh = assy.getGmsh(imprint=True)
+    gmsh.model.mesh.generate(3)
+
+    phys_groups = gmsh.model.getPhysicalGroups(3)
+
+    # Make sure we got the correct names
+    name = gmsh.model.getPhysicalName(3, 1)
+    assert name == "cube_1"
+    name = gmsh.model.getPhysicalName(3, 2)
+    assert name == "mat:copper"
+    name = gmsh.model.getPhysicalName(3, 3)
+    assert name == "cube_2"
+    name = gmsh.model.getPhysicalName(3, 4)
+    assert name == "mat:steel"
+
+    #
+    # Non-imprinted assembly
+    #
+    gmsh = assy.getGmsh(imprint=False)
+    gmsh.model.mesh.generate(3)
+
+    phys_groups = gmsh.model.getPhysicalGroups(3)
+
+    # Make sure we got the correct names
+    name = gmsh.model.getPhysicalName(3, 1)
+    assert name == "cube_1"
+    name = gmsh.model.getPhysicalName(3, 2)
+    assert name == "mat:copper"
+    name = gmsh.model.getPhysicalName(3, 3)
+    assert name == "cube_2"
+    name = gmsh.model.getPhysicalName(3, 4)
+    assert name == "mat:steel"

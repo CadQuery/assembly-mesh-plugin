@@ -40,5 +40,6 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install .[dev]
+          python -m pip install --upgrade git+https://github.com/CadQuery/cadquery.git
       - name: Run tests
         run: python -m pytest -v
