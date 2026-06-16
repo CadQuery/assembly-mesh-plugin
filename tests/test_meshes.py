@@ -9,6 +9,8 @@ from tests.sample_assemblies import (
     generate_assembly,
     generate_subshape_assembly,
     generate_materials_assembly,
+    generate_edge_tagged_assembly,
+    generate_multi_solid_edge_assembly,
 )
 
 
@@ -176,6 +178,99 @@ def test_nested_sphere_assembly():
 
     # Ensure that there are physical groups
     _check_physical_groups()
+
+
+def _edge_groups(gmsh):
+    """Return a {name: [curve ids]} mapping of all 1D (edge) physical groups."""
+    return {
+        gmsh.model.getPhysicalName(1, tag): list(
+            gmsh.model.getEntitiesForPhysicalGroup(1, tag)
+        )
+        for _, tag in gmsh.model.getPhysicalGroups(1)
+    }
+
+
+def test_edge_tags_non_imprint():
+    """
+    Tagged edges should become 1D physical groups, with part-prefixed names for
+    normal tags and a stripped, merged group for multi-part (~) tags.
+    """
+
+    assy = generate_edge_tagged_assembly()
+
+    gmsh = assy.getTaggedGmsh()
+
+    groups = _edge_groups(gmsh)
+
+    # Part-prefixed edge tag
+    assert "left_outer-edges" in groups
+    assert len(groups["left_outer-edges"]) == 2
+
+    # Multi-part (~) edge tag merges across both parts (two curves from each)
+    assert "contact" in groups
+    assert len(groups["contact"]) == 4
+
+
+def test_edge_tags_imprint():
+    """
+    Edge tagging should also work on the imprinted (conformal) path.
+    """
+
+    assy = generate_edge_tagged_assembly()
+
+    gmsh = assy.getImprintedGmsh()
+
+    groups = _edge_groups(gmsh)
+
+    assert "left_outer-edges" in groups
+    assert "contact" in groups
+
+
+def test_edge_and_face_tags_coexist():
+    """
+    Face tags (2D groups) and edge tags (1D groups) should both be present, and
+    re-running should not leak or duplicate groups between calls.
+    """
+
+    assy = generate_edge_tagged_assembly()
+
+    gmsh = assy.getTaggedGmsh()
+
+    # Face tag present as a 2D physical group
+    face_names = [
+        gmsh.model.getPhysicalName(2, tag) for _, tag in gmsh.model.getPhysicalGroups(2)
+    ]
+    assert "left_top" in face_names
+
+    # Edge tag present as a 1D physical group
+    assert "left_outer-edges" in _edge_groups(gmsh)
+
+    # Running again should not accumulate duplicate edge groups (reset check)
+    gmsh = assy.getTaggedGmsh()
+    edge_names = [
+        gmsh.model.getPhysicalName(1, tag) for _, tag in gmsh.model.getPhysicalGroups(1)
+    ]
+    assert edge_names.count("contact") == 1
+    assert edge_names.count("left_outer-edges") == 1
+
+
+def test_edge_tags_multi_solid_part_no_duplicates():
+    """
+    A part made of multiple disjoint solids should not produce duplicate curves
+    in its edge physical group on the imprinted path.
+    """
+
+    assy = generate_multi_solid_edge_assembly()
+
+    gmsh = assy.getImprintedGmsh()
+
+    groups = _edge_groups(gmsh)
+
+    assert "twin_verts" in groups
+    curves = groups["twin_verts"]
+    # Two boxes, four vertical edges each, with no duplicates
+    assert len(curves) == 8
+    assert len(curves) == len(set(curves))
 
 
 def test_mesh_materials():

@@ -332,3 +332,44 @@ def generate_materials_assembly():
     assy.add(cube_2, name="cube_2", loc=cq.Location(0, 0, 5), material="steel")
 
     return assy
+
+
+def generate_edge_tagged_assembly():
+    """
+    Two touching boxes that exercise edge tagging:
+      * a part-prefixed edge tag (left_outer-edges),
+      * a multi-part (~) edge tag shared across both parts (contact),
+      * a face tag (left_top) to confirm faces and edges coexist.
+    """
+
+    # Left box: a normal edge tag, a multi-part edge tag, and a face tag
+    left = cq.Workplane().box(10, 10, 10)
+    left.edges("|Z and <X").tag("outer-edges")  # -> left_outer-edges
+    left.edges("|Z and >X").tag("~contact")  # -> contact (part name stripped)
+    left.faces(">Z").tag("top")  # -> left_top
+
+    # Right box shares the interface edges with the left box's >X edges
+    right = cq.Workplane().transformed(offset=(10, 0, 0)).box(10, 10, 10)
+    right.edges("|Z and <X").tag("~contact")  # -> contact
+
+    assy = cq.Assembly()
+    assy.add(left, name="left")
+    assy.add(right, name="right")
+
+    return assy
+
+
+def generate_multi_solid_edge_assembly():
+    """
+    A single assembly part that contains two disjoint solids, with the vertical
+    edges of both tagged. Used to confirm the imprinted path does not duplicate
+    curves in the resulting 1D physical group.
+    """
+
+    twin = cq.Workplane().pushPoints([(-20, 0), (20, 0)]).box(5, 5, 5)
+    twin.edges("|Z").tag("verts")
+
+    assy = cq.Assembly()
+    assy.add(twin, name="twin")
+
+    return assy

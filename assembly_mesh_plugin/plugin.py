@@ -14,9 +14,52 @@ volume_map = {}
 # Holds the collection of individual faces that are tagged
 tagged_faces = {}
 
+# Holds the collection of individual edges that are tagged
+tagged_edges = {}
+
+# Tracks which gmsh curve tags belong to each part
+solid_curves = {}
+
 # Tracks multi-surface physical groups
 multi_material_groups = {}
 surface_groups = {}
+
+# Tracks edge (1D) physical groups
+edge_groups = {}
+multi_material_edge_groups = {}
+
+
+def _gmsh_curve_signatures(gmsh):
+    """
+    Build a geometric signature for every 1D curve currently in the model, keyed
+    by gmsh curve tag. Matching tagged edges by geometry rather than enumeration
+    order keeps edge tagging correct even when curves are shared between faces/solids.
+    """
+    sigs = {}
+    for _, ctag in gmsh.model.getEntities(1):
+        bbox = gmsh.model.getBoundingBox(1, ctag)
+        tmin, tmax = gmsh.model.getParametrizationBounds(1, ctag)
+        mid = gmsh.model.getValue(1, ctag, [0.5 * (tmin[0] + tmax[0])])
+        sigs[ctag] = (bbox, mid)
+
+    return sigs
+
+
+def _edge_matches(edge, sig, tol=1e-6):
+    """True if a CadQuery edge matches a gmsh curve signature."""
+    bbox, mid = sig
+    eb = edge.BoundingBox()
+    cqbox = (eb.xmin, eb.ymin, eb.zmin, eb.xmax, eb.ymax, eb.zmax)
+    if max(abs(a - b) for a, b in zip(cqbox, bbox)) > tol:
+        return False
+
+    # Midpoint disambiguates curves that share a bounding box
+    em = edge.positionAt(0.5)
+    return (
+        abs(em.x - mid[0]) <= tol
+        and abs(em.y - mid[1]) <= tol
+        and abs(em.z - mid[2]) <= tol
+    )
 
 
 def extract_subshape_names(assy, name=None):
@@ -43,19 +86,21 @@ def extract_subshape_names(assy, name=None):
             else:
                 tagged_faces[short_name][subshape_tag] = [subshape]
 
-    # Check for face tags
+    # Check for face and edge tags
     if assy.objects[short_name].obj:
         for tag, wp in assy.objects[short_name].obj.ctx.tags.items():
-            # Make sure the entry for the assembly child exists
-            if short_name not in tagged_faces:
-                tagged_faces[short_name] = {}
+            # Make sure the entries for the assembly child exists
+            tagged_faces.setdefault(short_name, {})
+            tagged_edges.setdefault(short_name, {})
 
-            for face in wp.faces().all():
-                # Create a new list for tag if it does not already exist
-                if tag in tagged_faces[short_name]:
-                    tagged_faces[short_name][tag].append(face.val())
-                else:
-                    tagged_faces[short_name][tag] = [face.val()]
+            # A tag stores a Workplane object that can contain edges or faces
+            objs = wp.objects
+            if objs and isinstance(objs[0], cq.Edge):
+                for edge in wp.edges().all():
+                    tagged_edges[short_name].setdefault(tag, []).append(edge.val())
+            else:
+                for face in wp.faces().all():
+                    tagged_faces[short_name].setdefault(tag, []).append(face.val())
 
     # Recurse through the assembly children
     for child in assy.children:
@@ -67,6 +112,8 @@ def add_solid_to_mesh(gmsh, solid, name):
     Adds a given CadQuery solid to the gmsh mesh.
     """
     global vol_id, volumes, volume_map
+
+    before = {t for _, t in gmsh.model.getEntities(1)}
 
     with tempfile.NamedTemporaryFile(suffix=".brep") as temp_file:
         solid.exportBrep(temp_file.name)
@@ -85,6 +132,10 @@ def add_solid_to_mesh(gmsh, solid, name):
 
                 # Move to the next volume ID
                 vol_id += 1
+
+    gmsh.model.occ.synchronize()
+    after = {t for _, t in gmsh.model.getEntities(1)}
+    solid_curves.setdefault(name, set()).update(after - before)
 
 
 def add_faces_to_mesh(gmsh, solid, name, loc=None):
@@ -146,12 +197,41 @@ def add_faces_to_mesh(gmsh, solid, name, loc=None):
     gmsh.model.occ.synchronize()
 
 
+def add_edges_to_mesh(gmsh, name, loc=None, curve_sigs=None):
+    """Match a part's tagged edges to gmsh curves and collect them into 1D physical groups."""
+    global edge_groups, multi_material_edge_groups
+
+    if not tagged_edges.get(name):
+        return
+
+    for tag, tag_edges in tagged_edges[name].items():
+        for tag_edge in tag_edges:
+            # Move the edge into its assembly position
+            if loc:
+                tag_edge = tag_edge.moved(loc)
+
+            # Find the gmsh curve whose geometry matches this tagged edge
+            match = next(
+                (c for c, sig in curve_sigs.items() if _edge_matches(tag_edge, sig)),
+                None,
+            )
+            if match is None:
+                continue
+
+            # Same ~ convention as faces: strip the part name for multi-part groups
+            if tag.startswith("~"):
+                group_name = tag.replace("~", "").split("-")[0]
+                multi_material_edge_groups.setdefault(group_name, []).append(match)
+            else:
+                edge_groups.setdefault(f"{name}_{tag}", []).append(match)
+
+
 def get_gmsh(self, imprint=True):
     """
     Allows the user to get a gmsh object from the assembly, respecting assembly part names and face
     tags, but have more control over how it is meshed. This method makes sure the mesh is conformal.
     """
-    global vol_id, surface_id, volumes, volume_map, tagged_faces, multi_material_groups, surface_groups
+    global vol_id, surface_id, volumes, volume_map, tagged_faces, multi_material_groups, surface_groups, solid_curves, tagged_edges, edge_groups, multi_material_edge_groups
 
     # Reset global state for each call
     vol_id = 1
@@ -162,6 +242,10 @@ def get_gmsh(self, imprint=True):
     multi_material_groups = {}
     surface_groups = {}
     solid_materials = []
+    solid_curves = {}
+    tagged_edges = {}
+    edge_groups = {}
+    multi_material_edge_groups = {}
 
     gmsh.initialize()
     gmsh.option.setNumber(
@@ -217,6 +301,26 @@ def get_gmsh(self, imprint=True):
             if self.objects[name.split("/")[-1]].material:
                 solid_materials.append(self.objects[name.split("/")[-1]].material.name)
 
+    # Second pass: Build the curve signatures once and match each part's tagged edges
+    # against only the curves that belong to that part.
+    gmsh.model.occ.synchronize()
+    curve_sigs = _gmsh_curve_signatures(gmsh)
+
+    if imprint:
+        seen = set()
+        for _, name in imprinted_solids_with_orginal_ids.items():
+            short_name = name[0].split("/")[-1]
+            if short_name in seen:
+                continue
+            seen.add(short_name)
+            part_sigs = {c: curve_sigs[c] for c in solid_curves.get(short_name, ())}
+            add_edges_to_mesh(gmsh, short_name, None, part_sigs)
+    else:
+        for obj, name, loc, _ in self:
+            short_name = name.split("/")[-1]
+            part_sigs = {c: curve_sigs[c] for c in solid_curves.get(short_name, ())}
+            add_edges_to_mesh(gmsh, short_name, loc, part_sigs)
+
     # Step through each of the volumes and add physical groups for each
     for volume_id in volumes.keys():
         gmsh.model.occ.synchronize()
@@ -241,6 +345,18 @@ def get_gmsh(self, imprint=True):
         gmsh.model.occ.synchronize()
         ps = gmsh.model.addPhysicalGroup(2, mm_group)
         gmsh.model.setPhysicalName(2, ps, f"{group_name}")
+
+    # Handle tagged edge groups (1D physical groups)
+    for e_name, edge_group in edge_groups.items():
+        gmsh.model.occ.synchronize()
+        ps = gmsh.model.addPhysicalGroup(1, edge_group)
+        gmsh.model.setPhysicalName(1, ps, e_name)
+
+    # Handle multi-material edge tags
+    for group_name, mm_group in multi_material_edge_groups.items():
+        gmsh.model.occ.synchronize()
+        ps = gmsh.model.addPhysicalGroup(1, mm_group)
+        gmsh.model.setPhysicalName(1, ps, f"{group_name}")
 
     gmsh.model.occ.synchronize()
 
